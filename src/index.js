@@ -145,10 +145,16 @@ class Game extends React.Component {
             );
         });
 
-        let status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+        let status = 'Status';
 
         if (winner) {
             status = 'Winner: ' + winner.sign;
+        } else {
+            if (stepNumber === 9) {
+                status = 'Draw!';
+            } else {
+                status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+            }
         }
 
         return (
