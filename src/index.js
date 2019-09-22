@@ -4,21 +4,36 @@ import './index.css';
 
 function Square(props) {
     return (
-        <button className="square" onClick={props.onClick}>
+        <button
+            className="square"
+            onClick={props.onClick}
+            style={props.highlight ? {backgroundColor: 'yellow'} : {}}
+        >
             {props.value}
         </button>
     );
 }
 
 class Board extends React.Component {
-    renderSquare(i) {
+    renderSquare(i, highlight) {
         return (
             <Square
                 key={i}
                 value={this.props.squares[i]}
                 onClick={() => this.props.onClick(i)}
+                highlight={highlight}
             />
         );
+    }
+
+    highlightSquare(key) {
+        for (let i = 0; i < 3; i++) {
+            if (this.props.winner.line[i] === key) {
+                return this.renderSquare(key, true);
+            }
+        }
+
+        return this.renderSquare(key, false);
     }
 
     render() {
@@ -30,7 +45,12 @@ class Board extends React.Component {
 
             for (let j = 0; j < 3; j++) {
                 key = i * 3 + j;
-                row.push(this.renderSquare(key));
+
+                if (this.props.winner) {
+                    row.push(this.highlightSquare(key));
+                } else {
+                    row.push(this.renderSquare(key, false));
+                }
             }
 
             col.push(<div key={key}>{row}</div>);
@@ -128,13 +148,14 @@ class Game extends React.Component {
         let status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
 
         if (winner) {
-            status = 'Winner: ' + winner;
+            status = 'Winner: ' + winner.sign;
         }
 
         return (
             <div className="game">
                 <div className="game-board">
                     <Board
+                        winner={winner}
                         squares={current.squares}
                         onClick={i => this.handleClick(i)}
                     />
@@ -164,6 +185,12 @@ function calculateWinner(squares) {
         [0, 4, 8],
         [2, 4, 6]
     ];
+
+    let winner = {
+        sign: 'N',
+        line: [9, 9, 9]
+    };
+
     for (let i = 0; i < lines.length; i++) {
         const [a, b, c] = lines[i];
         if (
@@ -171,7 +198,9 @@ function calculateWinner(squares) {
             squares[a] === squares[b] &&
             squares[a] === squares[c]
         ) {
-            return squares[a];
+            winner.sign = squares[a];
+            winner.line = lines[i];
+            return winner;
         }
     }
     return null;
